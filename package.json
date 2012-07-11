@@ -1,0 +1,32 @@
+{
+  "name"            : "hubjs-fork",
+  "version"         : "0.1.0",
+  "description"     : "Forking hub.js instances with hub.js",
+  "author"          : "Maximilian Antoni (http://maxantoni.de)",
+  "homepage"        : "http://mantoni.github.com/hub-fork.js",
+  "main"            : "./lib/fork.js",
+  "engines"         : {
+    "node"          : ">=0.6"
+  },
+  "scripts"         : {
+    "test"          : "make test"
+  },
+  "repository"      : {
+    "type"          : "git",
+    "url"           : "https://github.com/mantoni/hub-fork.js.git"
+  },
+  "dependencies"    : {
+    "hubjs"         : "~0.2.1"
+  },
+  "devDependencies" : {
+    "utest"         : "~0.0.6",
+    "urun"          : "~0.0.6",
+    "sinon"         : "~1.4.0",
+    "uglify-js"     : "~1.2.6"
+  },
+  "nomo"            : {
+    "name"          : "hub-fork.js",
+    "require"       : "lib/fork",
+    "fileName"      : "hub-fork.js"
+  }
+}
