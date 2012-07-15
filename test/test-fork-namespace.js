@@ -7,21 +7,18 @@
  */
 'use strict';
 
-var test      = require('utest');
-var assert    = require('assert');
-var sinon     = require('sinon');
+var test    = require('utest');
+var assert  = require('assert');
+var sinon   = require('sinon');
 
-var hub       = require('hubjs');
-var fork      = require('../lib/fork');
+var hub     = require('hubjs');
+var fork    = require('../lib/fork');
 
 
-function setupFork(parent, namespace, event) {
+function setupFork(parent) {
   var spy = sinon.spy();
-  parent.emit('fork', namespace || 'ns', function (err, forked) {
-    if (err) {
-      throw err;
-    }
-    forked.on(event || 'test', spy);
+  parent.emit('fork', 'ns', function (err, forked) {
+    forked.on('test', spy);
   });
   return spy;
 }
@@ -55,7 +52,10 @@ test('fork-namespace', {
 
 
   'should receive event with dots emitted on parent hub': function () {
-    var spy = setupFork(this.hub, 'some', 'test.abc');
+    var spy = sinon.spy();
+    this.hub.emit('fork', 'some', function (err, forked) {
+      forked.on('test.abc', spy);
+    });
 
     this.hub.emit('some.test.abc');
 
@@ -78,6 +78,17 @@ test('fork-namespace', {
     this.hub.emit('ns.test', 123, 'abc', {});
 
     sinon.assert.calledWith(spy, 123, 'abc', {});
+  },
+
+
+  'should invoke parent listener first, then forked listener': function () {
+    var spy1 = setupFork(this.hub);
+    var spy2 = sinon.spy();
+    this.hub.on('ns.test', spy2);
+
+    this.hub.emit('ns.test');
+
+    sinon.assert.callOrder(spy2, spy1);
   },
 
 
