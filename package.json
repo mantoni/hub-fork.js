@@ -16,13 +16,14 @@
     "url"           : "https://github.com/mantoni/hub-fork.js.git"
   },
   "dependencies"    : {
-    "hubjs"         : "~0.2.2"
+    "hubjs"         : "~0.3.1"
   },
   "devDependencies" : {
     "utest"         : "~0.0.6",
     "urun"          : "~0.0.6",
     "sinon"         : "~1.4.2",
-    "uglify-js"     : "~1.2.6"
+    "uglify-js"     : "~1.2.6",
+    "autolint"      : "~1.0.4"
   },
   "nomo"            : {
     "name"          : "hub-fork.js",
