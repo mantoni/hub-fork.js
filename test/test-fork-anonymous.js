@@ -13,6 +13,7 @@ var sinon   = require('sinon');
 
 var hub     = require('hubjs');
 var fork    = require('../lib/fork');
+var util    = require('./util');
 
 
 test('fork', {
@@ -28,7 +29,7 @@ test('fork', {
 
     this.hub.emit('fork', spy);
 
-    sinon.assert.calledWith(spy, null, sinon.match.instanceOf(hub.Hub));
+    sinon.assert.calledWith(spy, null, util.matchesHub);
     assert(this.hub !== spy.firstCall.args[2]);
   },
 
@@ -52,7 +53,7 @@ test('fork', {
       forked.emit('fork', spy);
     });
 
-    sinon.assert.calledWith(spy, null, sinon.match.instanceOf(hub.Hub));
+    sinon.assert.calledWith(spy, null, util.matchesHub);
     assert(this.hub !== spy.firstCall.args[2]);
   }
 

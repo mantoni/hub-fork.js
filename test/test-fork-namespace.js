@@ -13,6 +13,7 @@ var sinon   = require('sinon');
 
 var hub     = require('hubjs');
 var fork    = require('../lib/fork');
+var util    = require('./util');
 
 
 function setupFork(parent) {
@@ -37,7 +38,7 @@ test('fork-namespace', {
 
     this.hub.emit('fork', 'ns', spy);
 
-    sinon.assert.calledWith(spy, null, sinon.match.instanceOf(hub.Hub));
+    sinon.assert.calledWith(spy, null, util.matchesHub);
     assert(this.hub !== spy.firstCall.args[2]);
   },
 
