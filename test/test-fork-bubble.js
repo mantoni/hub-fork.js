@@ -25,8 +25,7 @@ function emitOnFork(parent, event, args) {
 test('fork-bubble', {
 
   before: function () {
-    this.hub = hub();
-    fork(this.hub);
+    this.hub = fork();
   },
 
 
@@ -155,26 +154,6 @@ test('fork-bubble', {
   },
 
 
-  'should not bubble event after preventing another bubble': function () {
-    var spyA    = sinon.spy();
-    var spyB    = sinon.spy();
-    var parent  = this.hub;
-    parent.on('a', spyA);
-    parent.on('b', spyB);
-
-    parent.emit('fork', 'ns', function (err, forked) {
-      forked.once('a', function () {
-        parent.emit('ns.b');
-        forked.emit('a');
-      });
-    });
-    parent.emit('ns.a');
-
-    sinon.assert.notCalled(spyA);
-    sinon.assert.notCalled(spyB);
-  },
-
-
   'should bubble event different from parent event': function () {
     var spy = sinon.spy();
     this.hub.on('event', spy);
@@ -202,6 +181,31 @@ test('fork-bubble', {
 
     sinon.assert.calledOnce(spy1);
     sinon.assert.calledOnce(spy2);
-  }
+  },
+
+
+  'should not bubble concurrent events from parent': sinon.test(function () {
+    var spyA = sinon.spy();
+    var spyB = sinon.spy();
+    this.hub.on('bubble.a', spyA);
+    this.hub.on('bubble.b', spyB);
+
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('bubble.a', function (callback) {
+        setTimeout(callback, 1);
+      });
+      forked.on('bubble.b', function (callback) {
+        setTimeout(callback, 2);
+      });
+    });
+
+    this.hub.emit('ns.bubble.a');
+    this.hub.emit('ns.bubble.b');
+    this.clock.tick(1);
+    this.clock.tick(1);
+
+    sinon.assert.notCalled(spyA);
+    sinon.assert.notCalled(spyB);
+  })
 
 });

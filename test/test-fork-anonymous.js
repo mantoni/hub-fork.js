@@ -16,11 +16,10 @@ var fork    = require('../lib/fork');
 var util    = require('./util');
 
 
-test('fork', {
+test('fork-anonymous', {
 
   before: function () {
-    this.hub = hub();
-    fork(this.hub);
+    this.hub = fork();
   },
 
 

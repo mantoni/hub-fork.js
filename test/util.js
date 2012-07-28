@@ -10,7 +10,12 @@
 var sinon   = require('sinon');
 
 
-exports.matchesHub = sinon.match(function (value) {
+exports.isHub = function (value) {
   return typeof value === 'object' && typeof value.on === 'function' &&
     typeof value.emit === 'function';
+};
+
+
+exports.matchesHub = sinon.match(function (value) {
+  return exports.isHub;
 }, 'hub');

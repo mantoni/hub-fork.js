@@ -28,8 +28,7 @@ function setupFork(parent) {
 test('fork-namespace', {
 
   before: function () {
-    this.hub = hub();
-    fork(this.hub);
+    this.hub = fork();
   },
 
 
