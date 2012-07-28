@@ -1,6 +1,6 @@
 {
   "name"            : "hubjs-fork",
-  "version"         : "0.1.0",
+  "version"         : "0.1.1",
   "description"     : "Forking hub.js instances with hub.js",
   "author"          : "Maximilian Antoni (http://maxantoni.de)",
   "homepage"        : "http://mantoni.github.com/hub-fork.js",
