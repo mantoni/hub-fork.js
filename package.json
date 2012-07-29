@@ -16,7 +16,7 @@
     "url"           : "https://github.com/mantoni/hub-fork.js.git"
   },
   "dependencies"    : {
-    "hubjs"         : "~0.3.1"
+    "hubjs"         : "~0.3.2"
   },
   "devDependencies" : {
     "utest"         : "~0.0.6",
