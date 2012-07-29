@@ -72,17 +72,161 @@ test('fork-bubble', {
   },
 
 
-  'should emit event on parent after emitting on fork': function () {
-    var spy1 = sinon.spy();
-    var spy2 = sinon.spy();
-    this.hub.on('x', spy1);
+  'should emit event on parent after emitting on fork': sinon.test(
+    function () {
+      var spy1 = sinon.spy();
+      var spy2 = sinon.spy();
+      this.hub.before('x', spy1);
+
+      this.hub.emit('fork', 'ns', function (err, forked) {
+        forked.on('x', function (callback) {
+          setTimeout(callback, 1);
+        });
+        forked.after('x', spy2);
+        forked.emit('x');
+      });
+      this.clock.tick(1);
+
+      sinon.assert.calledOnce(spy1);
+      sinon.assert.calledOnce(spy2);
+      sinon.assert.callOrder(spy2, spy1);
+    }
+  ),
+
+
+  'should pass result from fork to callback': function () {
+    var spy = sinon.spy();
 
     this.hub.emit('fork', 'ns', function (err, forked) {
-      forked.on('x', spy2);
+      forked.on('x', sinon.stub().returns('from fork'));
+      forked.emit('x', spy);
+    });
+
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWith(spy, null, 'from fork');
+  },
+
+
+  'should pass result from parent to callback': function () {
+    var spy = sinon.spy();
+
+    this.hub.on('x', sinon.stub().returns('from parent'));
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.emit('x', spy);
+    });
+
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWith(spy, null, 'from parent');
+  },
+
+
+  'should combine results from fork and parent': function () {
+    var spy = sinon.spy();
+
+    this.hub.on('x', sinon.stub().returns('b'));
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', sinon.stub().returns('a'));
+      forked.emit('x', hub.CONCAT, spy);
+    });
+
+    sinon.assert.calledWith(spy, null, ['a', 'b']);
+  },
+
+
+  'should combine results from fork of fork, fork and parent': function () {
+    var spy = sinon.spy();
+
+    this.hub.on('x', sinon.stub().returns('c'));
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', sinon.stub().returns('b'));
+      forked.emit('fork', 'nested', function (err, nestedFork) {
+        nestedFork.on('x', sinon.stub().returns('a'));
+        nestedFork.emit('x', hub.CONCAT, spy);
+      });
+    });
+
+    sinon.assert.calledWith(spy, null, ['a', 'b', 'c']);
+  },
+
+
+  'should pass error from fork to callback': function () {
+    var spy = sinon.spy();
+    var err = new Error('from fork');
+
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', sinon.stub().throws(err));
+      forked.emit('x', spy);
+    });
+
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWith(spy, err);
+  },
+
+
+  'should pass error from parent to callback': function () {
+    var spy = sinon.spy();
+    var err = new Error('from parent');
+
+    this.hub.on('x', sinon.stub().throws(err));
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.emit('x', spy);
+    });
+
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWith(spy, err);
+  },
+
+
+  'should combine errors from fork and parent': function () {
+    var spy   = sinon.spy();
+    var err1  = new Error('from fork');
+    var err2  = new Error('from parent');
+
+    this.hub.on('x', sinon.stub().throws(err2));
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', sinon.stub().throws(err1));
+      forked.emit('x', spy);
+    });
+
+    sinon.assert.calledWithMatch(spy, {
+      name    : 'ErrorList',
+      errors  : [err1, err2]
+    });
+  },
+
+
+  'should combine error from fork of fork, fork and parent': function () {
+    var spy = sinon.spy();
+    var err1  = new Error('from fork of fork');
+    var err2  = new Error('from fork');
+    var err3  = new Error('from parent');
+
+    this.hub.on('x', sinon.stub().throws(err3));
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', sinon.stub().throws(err2));
+      forked.emit('fork', 'nested', function (err, nestedFork) {
+        nestedFork.on('x', sinon.stub().throws(err1));
+        nestedFork.emit('x', hub.CONCAT, spy);
+      });
+    });
+
+    sinon.assert.calledWithMatch(spy, {
+      name    : 'ErrorList',
+      errors  : [err1, err2, err3]
+    });
+  },
+
+
+  'should not emit on parent if event was stopped': function () {
+    var spy = sinon.spy();
+
+    this.hub.on('x', spy);
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', function () { this.stop(); });
       forked.emit('x');
     });
 
-    sinon.assert.callOrder(spy2, spy1);
+    sinon.assert.notCalled(spy);
   },
 
 
