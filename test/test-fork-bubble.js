@@ -217,13 +217,26 @@ test('fork-bubble', {
   },
 
 
-  'should not emit on parent if event was stopped': function () {
+  'should not emit on parent if event was stopped 1': function () {
     var spy = sinon.spy();
 
     this.hub.on('x', spy);
     this.hub.emit('fork', 'ns', function (err, forked) {
       forked.on('x', function () { this.stop(); });
       forked.emit('x');
+    });
+
+    sinon.assert.notCalled(spy);
+  },
+
+
+  'should not emit on parent if event was stopped 2': function () {
+    var spy = sinon.spy();
+
+    this.hub.on('x', spy);
+    this.hub.emit('fork', 'ns', function (err, forked) {
+      forked.on('x', function () { this.stop(); });
+      forked.emit('x', function () {});
     });
 
     sinon.assert.notCalled(spy);
